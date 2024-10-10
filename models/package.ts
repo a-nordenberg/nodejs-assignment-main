@@ -1,15 +1,18 @@
 import {type Association, type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model, type NonAttribute} from 'sequelize';
 import {sequelizeConnection} from '../db/config';
 import {Price} from './price';
+import {LocalPrice} from './localprice.ts';
 
 class Package extends Model<InferAttributes<Package>, InferCreationAttributes<Package>> {
 	declare static associations: {
 		prices: Association<Package, Price>;
+		localPrices: Association<Package, LocalPrice>;
 	};
 
 	declare id: CreationOptional<number>;
 	declare name: string;
 	declare priceCents: number;
+	declare localPrices?: NonAttribute<LocalPrice[]>;
 	declare prices?: NonAttribute<Price[]>;
 }
 
@@ -38,5 +41,11 @@ Package.hasMany(Price, {
 	foreignKey: 'packageId',
 	as: 'prices',
 });
+
+Package.hasMany(LocalPrice, {
+	sourceKey: 'id',
+	foreignKey: 'packageId',
+	as: 'localPrices'
+})
 
 export {Package};

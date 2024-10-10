@@ -1,13 +1,14 @@
 import {Package} from '../models/package';
 import {Price} from '../models/price';
+import {LocalPrice} from '../models/localprice';
 
 export const seedDb = async () => {
 	await Package.destroy({truncate: true});
 
 	await Package.bulkCreate([
-		{name: 'basic', priceCents: 20_000},
-		{name: 'plus', priceCents: 59_900},
-		{name: 'premium', priceCents: 111_100},
+		{name: 'basic'},
+		{name: 'plus'},
+		{name: 'premium'},
 	], {validate: true});
 
 	const basic = await Package.findOne({where: {name: 'basic'}}) as Package;
@@ -30,5 +31,15 @@ export const seedDb = async () => {
 		{priceCents: 66_600, packageId: premium.id},
 		{priceCents: 77_700, packageId: premium.id},
 		{priceCents: 88_800, packageId: premium.id},
+	], {validate: true});
+
+	await LocalPrice.bulkCreate([
+		{priceCents: 55_000, municipality: 'Göteborg', packageId: plus.id},
+		{priceCents: 66_600, municipality: 'Stockholm', packageId: plus.id},
+	], {validate: true});
+
+	await LocalPrice.bulkCreate([
+		{priceCents: 66_000, municipality: 'Göteborg', packageId: premium.id},
+		{priceCents: 77_600, municipality: 'Stockholm', packageId: premium.id},
 	], {validate: true});
 };

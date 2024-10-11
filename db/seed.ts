@@ -6,9 +6,9 @@ export const seedDb = async () => {
 	await Package.destroy({truncate: true});
 
 	await Package.bulkCreate([
-		{name: 'basic'},
-		{name: 'plus'},
-		{name: 'premium'},
+		{name: 'basic', priceCents: 20_000},
+		{name: 'plus', priceCents: 59_900},
+		{name: 'premium', priceCents: 111_100},
 	], {validate: true});
 
 	const basic = await Package.findOne({where: {name: 'basic'}}) as Package;

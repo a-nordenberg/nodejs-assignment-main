@@ -1,12 +1,14 @@
-import { sequelizeConnection } from '../db/config'
+import {sequelizeConnection} from '../db/config'
+import {LocalPrice} from '../models/localprice';
 import {Package} from '../models/package';
-import { Price } from '../models/price';
+import {Price} from '../models/price';
 
 export default {
   async getAll() {
     return await Package.findAll({
 			include: [
 				{model: Price, as: 'prices'},
+        {model: LocalPrice, as: 'localPrices'}
 			],
 		});
   },
@@ -28,13 +30,57 @@ export default {
       throw new Error('Error handling the transaction');
     }
   },
-	async priceFor(municipality: string) {
-    const foundPackage = await Package.findOne({ where: { name: municipality } });
 
+  async updateLocalPackagePrice(pack: Package, newPriceCents: number, municipality: string, createdAt?: Date) {
+    try {
+      const newPackage = await sequelizeConnection.transaction(async t => {
+        const localPrice = await LocalPrice.findOne({
+          where: { packageId: pack.id, municipality },
+          transaction: t
+        });
+        // if no localPrice was found, create a new one, otherwise save current price to log, then update with new price
+        if (!localPrice) {
+          await LocalPrice.create({
+            packageId: pack.id,
+            municipality,
+            priceCents: newPriceCents,
+          }, { transaction: t});
+        } else {
+          await Price.create({
+            packageId: pack.id,
+            priceCents: localPrice.priceCents,
+            createdAt: createdAt
+          }, { transaction: t });
+          localPrice.priceCents = newPriceCents;
+          await localPrice.save({ transaction: t });
+        }
+        return pack.save({ transaction: t });
+      });
+      return newPackage;
+    } catch (err: unknown) {
+      throw new Error('Error handling the transaction');
+    }
+  },
+
+	async priceFor(name: string, municipality?: string) {
+    // always return base package, also return localPrice for municipality if provided and found
+    const foundPackage = await Package.findOne({
+      where: { name: name },
+      include: municipality ? [{
+          model: LocalPrice,
+          as: 'localPrices',
+          where: { municipality: municipality },
+          required: false
+      }] : []
+    });
     if (!foundPackage) {
       return null;
     }
-
-		return foundPackage.priceCents;
+    // if a municipality was part of query and a price for said municipality was found, return it
+    if (municipality && foundPackage.localPrices && foundPackage.localPrices.length > 0) {
+      return foundPackage.localPrices[0].priceCents;
+    }
+    // if municipality was not part of query, or if package was found but no localPrice matching the municipality, then return base price
+    return foundPackage.priceCents;
 	},
 };

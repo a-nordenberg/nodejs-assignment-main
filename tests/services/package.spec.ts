@@ -74,4 +74,13 @@ describe('PackageService', () => {
 		expect(localPrices[1].priceCents).toBe(150_00);
 		expect(localPrices[1].municipality).toBe('Uppsala');
 	});
+
+	it('Returns base price as fallback if no matching LocalPrice is found', async () => {
+		const pack = await Package.create({ name: 'Dunderhonung', priceCents: 100_00 });
+
+		await packageService.updateLocalPackagePrice(pack, 200_00, 'Göteborg');
+		const localPrice = await packageService.priceFor('Dunderhonung', 'Uppsala');
+
+		expect(localPrice).toBe(100_00);
+	})
 });

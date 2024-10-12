@@ -18,6 +18,7 @@ export default {
         await Price.create({
           packageId: pack.id,
           priceCents: pack.priceCents,
+          municipality: 'Base Price',
         }, { transaction: t });
 
         pack.priceCents = newPriceCents;
@@ -31,34 +32,49 @@ export default {
     }
   },
 
-  async updateLocalPackagePrice(pack: Package, newPriceCents: number, municipality: string, createdAt?: Date) {
+  async updateLocalPackagePrice(pack: Package, newPriceCents: number, municipality: string, atDate?: Date) {
     try {
-      const newPackage = await sequelizeConnection.transaction(async t => {
+      return await sequelizeConnection.transaction(async t => {
+        console.log('atDate is: ' + atDate)
         const localPrice = await LocalPrice.findOne({
           where: { packageId: pack.id, municipality },
           transaction: t
         });
         // if no localPrice was found, create a new one, otherwise save current price to log, then update with new price
         if (!localPrice) {
+          const price = await Price.create({
+            packageId: pack.id,
+            priceCents: newPriceCents,
+            createdAt: atDate,
+            updatedAt: atDate,
+            municipality: municipality
+          }, { transaction: t });
+          console.log('new price:');
+          console.log(price);
           await LocalPrice.create({
             packageId: pack.id,
             municipality,
             priceCents: newPriceCents,
-          }, { transaction: t});
-        } else {
-          await Price.create({
-            packageId: pack.id,
-            priceCents: localPrice.priceCents,
-            createdAt: createdAt
           }, { transaction: t });
+        } else {
+          const price = await Price.create({
+            packageId: pack.id,
+            priceCents: newPriceCents,
+            createdAt: atDate,
+            updatedAt: atDate,
+            municipality: municipality
+          }, { transaction: t });
+          console.log('new price:');
+          console.log(price);
           localPrice.priceCents = newPriceCents;
           await localPrice.save({ transaction: t });
         }
-        return pack.save({ transaction: t });
+  
+        return pack;
       });
-      return newPackage;
-    } catch (err: unknown) {
-      throw new Error('Error handling the transaction');
+    } catch (err) {
+      console.error('Error handling the transaction, error is: ', err);
+      throw new Error('Error handling the transaction, ' + err);
     }
   },
 

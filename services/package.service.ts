@@ -35,22 +35,19 @@ export default {
   async updateLocalPackagePrice(pack: Package, newPriceCents: number, municipality: string, atDate?: Date) {
     try {
       return await sequelizeConnection.transaction(async t => {
-        console.log('atDate is: ' + atDate)
         const localPrice = await LocalPrice.findOne({
           where: { packageId: pack.id, municipality },
           transaction: t
         });
         // if no localPrice was found, create a new one, otherwise save current price to log, then update with new price
         if (!localPrice) {
-          const price = await Price.create({
+          await Price.create({
             packageId: pack.id,
             priceCents: newPriceCents,
             createdAt: atDate,
             updatedAt: atDate,
             municipality: municipality
           }, { transaction: t });
-          console.log('new price:');
-          console.log(price);
           await LocalPrice.create({
             packageId: pack.id,
             municipality,
@@ -64,8 +61,6 @@ export default {
             updatedAt: atDate,
             municipality: municipality
           }, { transaction: t });
-          console.log('new price:');
-          console.log(price);
           localPrice.priceCents = newPriceCents;
           await localPrice.save({ transaction: t });
         }

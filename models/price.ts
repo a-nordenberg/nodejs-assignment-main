@@ -5,6 +5,7 @@ import {type Package} from './package';
 class Price extends Model<InferAttributes<Price>, InferCreationAttributes<Price>> {
 	declare id: CreationOptional<number>;
 	declare priceCents: number;
+	declare municipality: string;
 	declare packageId: ForeignKey<Package['id']>;
 
 	declare createdAt: CreationOptional<Date>;
@@ -20,6 +21,11 @@ Price.init({
 	priceCents: {
 		type: DataTypes.INTEGER,
 		allowNull: false,
+	},
+	municipality: {
+		type: DataTypes.STRING,
+		allowNull: false,
+		defaultValue: 'Base Price'
 	},
 	createdAt: DataTypes.DATE,
 	updatedAt: DataTypes.DATE,

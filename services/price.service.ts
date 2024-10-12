@@ -1,7 +1,40 @@
 import { Package } from '../models/package'
 import { Price } from '../models/price'
+import { Op } from 'sequelize';
+
+type PricingHistoryResponse = {
+  [municipality: string]: number[];
+}
 
 export default {
-  // You may want to use this empty method 🤔
-  async getPriceHistory() {},
+  async getPriceHistory(packageName:string, year:number, municipality?:string) {
+    const pack = await Package.findOne({ where: { name: packageName } });
+    if (!pack) {
+      throw new Error('No such package exists');
+    }
+
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year + 1, 0, 1);
+
+    const historicalPrices = await Price.findAll({
+      where: {
+        packageId: pack.id,
+        [Op.or]: [
+          { createdAt: { [Op.between]: [startDate, endDate] } },
+          { updatedAt: { [Op.between]: [startDate, endDate] } },
+        ],
+        ...(municipality && { municipality }),
+      },
+      order: [['createdAt', 'ASC']],
+    });
+
+    const priceHistory: PricingHistoryResponse = {};
+    historicalPrices.forEach(entry => {
+      if (!priceHistory[entry.municipality]) {
+        priceHistory[entry.municipality] = [];
+      }
+      priceHistory[entry.municipality].push(entry.priceCents);
+    });
+    return priceHistory;
+  },
 }

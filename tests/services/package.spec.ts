@@ -6,6 +6,7 @@ import PackageService from '../../services/package.service';
 
 describe('PackageService', () => {
 	// Set the db object to a variable which can be accessed throughout the whole test file
+	
 	const db = sequelizeConnection;
 	const packageService = PackageService;
 
@@ -82,5 +83,5 @@ describe('PackageService', () => {
 		const localPrice = await packageService.priceFor('Dunderhonung', 'Uppsala');
 
 		expect(localPrice).toBe(100_00);
-	})
+	});
 });

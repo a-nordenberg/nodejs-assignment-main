@@ -16,21 +16,21 @@ export const seedDb = async () => {
 	const premium = await Package.findOne({where: {name: 'premium'}}) as Package;
 
 	await Price.bulkCreate([
-		{priceCents: 5000, packageId: basic.id},
-		{priceCents: 10_000, packageId: basic.id},
+		{priceCents: 5000, packageId: basic.id, municipality: "Göteborg"},
+		{priceCents: 10_000, packageId: basic.id, municipality: "Stockholm"},
 	], {validate: true});
 
 	await Price.bulkCreate([
-		{priceCents: 19_990, packageId: plus.id},
-		{priceCents: 29_900, packageId: plus.id},
-		{priceCents: 39_900, packageId: plus.id},
+		{priceCents: 19_990, packageId: plus.id, municipality: "Göteborg"},
+		{priceCents: 29_900, packageId: plus.id, municipality: "Göteborg"},
+		{priceCents: 39_900, packageId: plus.id, municipality: "Göteborg"},
 	], {validate: true});
 
 	await Price.bulkCreate([
-		{priceCents: 55_000, packageId: premium.id},
-		{priceCents: 66_600, packageId: premium.id},
-		{priceCents: 77_700, packageId: premium.id},
-		{priceCents: 88_800, packageId: premium.id},
+		{priceCents: 55_000, packageId: premium.id, municipality: "Göteborg"},
+		{priceCents: 66_600, packageId: premium.id, municipality: "Göteborg"},
+		{priceCents: 77_700, packageId: premium.id, municipality: "Stockholm"},
+		{priceCents: 88_800, packageId: premium.id, municipality: "Stockholm"},
 	], {validate: true});
 
 	await LocalPrice.bulkCreate([

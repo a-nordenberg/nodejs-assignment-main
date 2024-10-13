@@ -32,35 +32,30 @@ export default {
     }
   },
 
-  async updateLocalPackagePrice(pack: Package, newPriceCents: number, municipality: string, atDate?: Date) {
+  async updateLocalPackagePrice (
+    pack: Package, 
+    newPriceCents: number, 
+    municipality: string, 
+    atDate?: Date, 
+    retries = 3
+  ): Promise<Package> {
     try {
       return await sequelizeConnection.transaction(async t => {
-        const localPrice = await LocalPrice.findOne({
+        const [localPrice, created] = await LocalPrice.findOrCreate({
           where: { packageId: pack.id, municipality },
+          defaults: { priceCents: newPriceCents, packageId: pack.id, municipality: municipality },
           transaction: t
         });
-        // if no localPrice was found, create a new one, otherwise save current price to log, then update with new price
-        if (!localPrice) {
-          await Price.create({
-            packageId: pack.id,
-            priceCents: newPriceCents,
-            createdAt: atDate,
-            updatedAt: atDate,
-            municipality: municipality
-          }, { transaction: t });
-          await LocalPrice.create({
-            packageId: pack.id,
-            municipality,
-            priceCents: newPriceCents,
-          }, { transaction: t });
-        } else {
-          const price = await Price.create({
-            packageId: pack.id,
-            priceCents: newPriceCents,
-            createdAt: atDate,
-            updatedAt: atDate,
-            municipality: municipality
-          }, { transaction: t });
+        // Save current price to log and update with new price
+        await Price.create({
+        packageId: pack.id,
+        priceCents: newPriceCents,
+        createdAt: atDate,
+        updatedAt: atDate,
+        municipality: municipality
+        }, { transaction: t });        
+
+        if (!created) {
           localPrice.priceCents = newPriceCents;
           await localPrice.save({ transaction: t });
         }
@@ -68,7 +63,16 @@ export default {
         return pack;
       });
     } catch (err) {
-      console.error('Error handling the transaction, error is: ', err);
+      if( err instanceof Error ) {
+        // if sequelize timeout error, retry 3 times. reduces concurrency related errors
+        if (err.name === 'SequelizeDatabaseError' || err.name === 'SequelizeTimeoutError') {
+          if (retries > 0) {
+            console.warn(`Retrying transaction due to error: ${err.message}. Retries left: ${retries}`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Wait half a second, then try again
+            return await this.updateLocalPackagePrice(pack, newPriceCents, municipality, atDate, retries - 1);
+          }
+        }
+      }
       throw new Error('Error handling the transaction, ' + err);
     }
   },

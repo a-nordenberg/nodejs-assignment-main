@@ -34,6 +34,9 @@ Package.init({
 	},
 }, {
 	sequelize: sequelizeConnection,
+	indexes: [
+		{ unique: true, fields: ['name'] },
+	],
 });
 
 Package.hasMany(Price, {

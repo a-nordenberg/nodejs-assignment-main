@@ -31,6 +31,12 @@ Price.init({
 	updatedAt: DataTypes.DATE,
 }, {
 	sequelize: sequelizeConnection,
+	indexes: [
+		{ fields: ['packageId'] },
+		{ fields: ['createdAt'] },
+		{ fields: ['updatedAt'] },
+		{ fields: ['municipality'] },
+	],
 });
 
 export {Price};

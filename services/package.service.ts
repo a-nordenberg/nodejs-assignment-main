@@ -1,7 +1,7 @@
-import {sequelizeConnection} from '../db/config'
-import {LocalPrice} from '../models/localprice';
-import {Package} from '../models/package';
-import {Price} from '../models/price';
+import { sequelizeConnection } from '../db/config'
+import { LocalPrice } from '../models/localprice';
+import { Package } from '../models/package';
+import { Price } from '../models/price';
 
 export default {
   async getAll() {
@@ -29,7 +29,7 @@ export default {
       return newPackage;
     } catch (err: unknown) {
       throw new Error('Error handling the transaction');
-    }
+    };
   },
 
   async updateLocalPackagePrice (
@@ -74,7 +74,7 @@ export default {
         }
       }
       throw new Error('Error handling the transaction, ' + err);
-    }
+    };
   },
 
 	async priceFor(name: string, municipality?: string) {

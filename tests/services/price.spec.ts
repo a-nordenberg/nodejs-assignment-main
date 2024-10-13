@@ -6,9 +6,6 @@ import PriceService from '../../services/price.service';
 describe('PriceService', () => {
 	// Set the db object to a variable which can be accessed throughout the whole test file
 	const db = sequelizeConnection;
-  const packageService = PackageService;
-  const priceService = PriceService;
-
 	// Before any tests run, clear the DB and run migrations with Sequelize sync()
 	beforeEach(async () => {
 		await db.sync({force: true});
@@ -29,7 +26,7 @@ describe('PriceService', () => {
     await Promise.all([
       PackageService.updateLocalPackagePrice(basic, 20_00, 'Göteborg', date),
       PackageService.updateLocalPackagePrice(basic, 30_00, 'Stockholm', date),
-    ])
+    ]);
 
     // These should be included
     date.setFullYear(2020);
@@ -76,7 +73,7 @@ describe('PriceService', () => {
       PackageService.updateLocalPackagePrice(basic, 30_00, 'Malmö', date),
       PackageService.updateLocalPackagePrice(basic, 50_00, 'Stockholm', date),
       PackageService.updateLocalPackagePrice(basic, 30_00, 'Stockholm', date),
-    ])
+    ]);
 
     date.setMonth(11);
 
@@ -90,6 +87,6 @@ describe('PriceService', () => {
       Malmö:[30_00],
       Stockholm: [30_00, 50_00, 40_00],
     });
-  })
+  });
 
 });

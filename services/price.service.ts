@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 
 type PricingHistoryResponse = {
   [municipality: string]: number[];
-}
+};
 
 export default {
   async getPriceHistory(packageName:string, year:number, municipality?:string) {
@@ -41,4 +41,4 @@ export default {
     });
     return priceHistory;
   },
-}
+};

@@ -1,6 +1,6 @@
-import {sequelizeConnection} from '../../db/config';
+import { sequelizeConnection } from '../../db/config';
 import { LocalPrice } from '../../models/localprice';
-import {Package} from '../../models/package';
+import { Package } from '../../models/package';
 import { Price } from '../../models/price'
 import PackageService from '../../services/package.service';
 
@@ -38,8 +38,6 @@ describe('PackageService', () => {
     	expect(priceHistory[0].priceCents).toBe(100_00);
   	});
 
-	// This tests cover feature request 1. Feel free to add more tests or change
-	// the existing one.
 	it('Supports adding a price for a specific municipality', async () => {
 		const pack = await Package.create({name: 'Dunderhonung', priceCents: 0});
 
